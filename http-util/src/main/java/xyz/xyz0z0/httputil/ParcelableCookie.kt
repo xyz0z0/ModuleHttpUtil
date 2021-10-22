@@ -1,6 +1,7 @@
 package xyz.xyz0z0.httputil
 
-import kotlinx.android.parcel.Parcelize
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import okhttp3.Cookie
 
 @Parcelize
@@ -8,7 +9,7 @@ class ParcelableCookie(
     val name: String, val value: String, val expiresAt: Long,
     val domain: String, val path: String, val secure: Boolean,
     val httpOnly: Boolean, val hostOnly: Boolean, val persistent: Boolean
-) {
+) : Parcelable {
 
 
     constructor(cookie: Cookie) : this(
