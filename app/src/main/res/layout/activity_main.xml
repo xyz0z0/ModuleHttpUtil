@@ -8,6 +8,12 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/btnCustomerLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="金禾系统登录" />
+
+    <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

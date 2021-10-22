@@ -3,8 +3,11 @@ package xyz.xyz0z0.httputil
 import android.os.Handler
 import android.os.Looper
 import android.util.ArrayMap
+import android.util.Log
 import okhttp3.FormBody
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 
 /**
  * Author: Cheng
@@ -15,7 +18,7 @@ class HttpUtils {
 
 
     private var mParams: MutableMap<String, Any> = ArrayMap<String, Any>()
-    private var mUrl: String = ""
+    private var mStrUrl: String = ""
     private var mType = POST_FORM_TYPE
     private var mRequestBody: RequestBody? = null
 
@@ -31,7 +34,7 @@ class HttpUtils {
     }
 
     fun url(url: String): HttpUtils {
-        mUrl = url
+        mStrUrl = url
         return this
     }
 
@@ -49,28 +52,57 @@ class HttpUtils {
         return this
     }
 
-
-    fun execute(callBack: EngineCallBack?) {
-//        val callBack: EngineCallBack = engineCallBack ?: EngineCallBack.DEFAULT_CALL_BACK
-//        callBack.onPreExecute(mParams)
+    suspend fun call(): String {
+        val host = mStrUrl.toHttpUrl().host
         if (mType == POST_FORM_TYPE) {
-            postCall(mUrl, mParams, callBack)
+            val responseBody = mHttpEngine.postSuspend(mStrUrl, mRequestBody!!)
+            transformMap[host]?.let {
+                return it.transformResponse(responseBody)
+            }
+            return defaultTransform.transformResponse(responseBody)
         }
         if (mType == GET_TYPE) {
-            getCall(mUrl, mParams, callBack)
+            val pathUrl = joinParams(mStrUrl, mParams)
+            val responseBody = mHttpEngine.getSuspend(pathUrl)
+            transformMap[host]?.let {
+                return it.transformResponse(responseBody)
+            }
+            return defaultTransform.transformResponse(responseBody)
         }
-//        if (mType == UPLOAD_FILE_TYPE) {
-//            uploadFileCall(mUrl, mParams, callBack)
-//        }
-//        if (mType == POST_STRING_TYPE) {
-//            postStringCall(mUrl, mStringParam, mHeaders, callBack)
-//        }
-//        if (mType == DOWNLOAD_FILE_TYPE) {
-//            downloadFileCall(mUrl, mSaveFilePath, callBack)
-//        }
+        throw HttpUtilException(0, "Code Error")
     }
 
-    private fun postCall(url: String, params: Map<String, Any>, callBack: EngineCallBack?) {
+    fun execute(callBack: EngineCallBack?) {
+        val host = mStrUrl.toHttpUrl().host
+        Log.d("cxg", "host $host")
+        if (mType == POST_FORM_TYPE) {
+            postCall(mStrUrl, mParams, object : NetCallBack {
+                override fun onError(e: Exception) {
+                    callBack?.onError(e)
+                }
+
+                override fun onSuccess(responseBody: ResponseBody) {
+                    callBack?.onSuccess(transformMap[host]?.transformResponse(responseBody)!!)
+                }
+            })
+        }
+        if (mType == GET_TYPE) {
+            val pathUrl = joinParams(mStrUrl, mParams)
+            getCall(pathUrl, object : NetCallBack {
+                override fun onError(e: Exception) {
+                    callBack?.onError(e)
+                }
+
+                override fun onSuccess(responseBody: ResponseBody) {
+                    callBack?.onSuccess(transformMap[host]?.transformResponse(responseBody)!!)
+                }
+
+
+            })
+        }
+    }
+
+    private fun postCall(url: String, params: Map<String, Any>, callBack: NetCallBack) {
         if (mRequestBody == null) {
             mRequestBody = HttpUtils.wrapFormBody(params)
         }
@@ -80,8 +112,8 @@ class HttpUtils {
     }
 
 
-    private fun getCall(url: String, params: Map<String, Any>, callBack: EngineCallBack?) {
-        mHttpEngine.get(url, params, callBack)
+    private fun getCall(pathUrl: String, callBack: NetCallBack) {
+        mHttpEngine.get(pathUrl, callBack)
     }
 
 
@@ -104,6 +136,13 @@ class HttpUtils {
         var mHttpEngine: IHttpEngine = OkHttpEngine()
 
         val mMainHandler = Handler(Looper.getMainLooper())
+
+        val defaultTransform = object : Transform {
+            override fun transformResponse(responseBody: ResponseBody): String {
+                return responseBody.string()
+            }
+
+        }
 
         fun with(): HttpUtils {
             return HttpUtils()
@@ -140,6 +179,13 @@ class HttpUtils {
             }
             sb.deleteCharAt(sb.length - 1)
             return sb.toString()
+        }
+
+        val transformMap: ArrayMap<String, Transform> = ArrayMap()
+
+
+        fun registerHost(url: String, netCallBack: Transform) {
+            transformMap[url.toHttpUrl().host] = netCallBack
         }
 
     }

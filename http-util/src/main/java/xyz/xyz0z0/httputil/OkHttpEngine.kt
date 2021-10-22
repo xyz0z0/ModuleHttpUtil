@@ -1,6 +1,8 @@
 package xyz.xyz0z0.httputil
 
 import com.blankj.utilcode.util.LogUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.*
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -24,39 +26,52 @@ class OkHttpEngine : IHttpEngine {
 
     }
 
-    private fun callOnFailure(callBack: EngineCallBack?, e: Exception) {
+    private fun callOnFailure(callBack: NetCallBack, e: Exception) {
         HttpUtils.mMainHandler.post {
-            callBack?.onError(e)
+            callBack.onError(e)
         }
     }
 
 
-    override fun get(url: String, params: Map<String, Any>, callBack: EngineCallBack?) {
-        val pathUrl = HttpUtils.joinParams(url, params)
+    override fun get(pathUrl: String, callBack: NetCallBack) {
         val request = Request.Builder().url(pathUrl).build()
         mOkHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                callOnFailure(callBack, e)
+                callBack.onError(e)
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     LogUtils.json("cxg-get", response.headers.toMultimap())
                     response.body?.let {
-                        callBack?.onSuccess(it.byteStream())
+                        callBack.onSuccess(it)
                         return
                     }
-                    callOnFailure(callBack, HttpUtilException(-1, "Null Body"))
-                } else {
-                    callOnFailure(callBack, HttpUtilException(response.code, response.message))
                 }
+                callOnFailure(callBack, HttpUtilException(response.code, response.message))
+
             }
         })
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
+    override suspend fun getSuspend(pathUrl: String): ResponseBody {
+        return withContext(Dispatchers.IO) {
+            val request = Request.Builder().url(pathUrl).build()
+            val response = mOkHttpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                response.body?.let {
+                    return@withContext it
+                }
+            }
+            throw HttpUtilException(response.code, "Msg:${response.message},Body:${response.body?.string()}")
+        }
+    }
+
     private var cookieStrList: List<String> = mutableListOf()
 
-    override fun post(url: String, requestBody: RequestBody, callBack: EngineCallBack?) {
+
+    override fun post(url: String, requestBody: RequestBody, callBack: NetCallBack) {
         val requestBuilder = Request.Builder().url(url).post(requestBody)
         mOkHttpClient.newCall(requestBuilder.build()).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -64,26 +79,40 @@ class OkHttpEngine : IHttpEngine {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    //////
+                if (response.isSuccessful && response.body != null) {
+                    //
                     val cookies = response.headers.values("Set-Cookie")
                     for (cookie in cookies) {
-                        val cookiee = Cookie.parse(response.request.url, cookie)
-                        LogUtils.json("cxg", cookiee)
+                        val cookie = Cookie.parse(response.request.url, cookie)
+                        LogUtils.json("cxg", cookie)
                     }
                     response.body?.let {
-                        callBack?.onSuccess(it.byteStream())
+                        callBack.onSuccess(it)
                         return
                     }
                     HttpUtils.mMainHandler.post {
-                        callBack?.onError(HttpUtilException(-1, "Null Body"))
+                        callBack.onError(HttpUtilException(-1, "Null Body"))
                     }
                 } else {
                     HttpUtils.mMainHandler.post {
-                        callBack?.onError(HttpUtilException(response.code, response.message))
+                        callBack.onError(HttpUtilException(response.code, response.message))
                     }
                 }
             }
         })
+    }
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    override suspend fun postSuspend(url: String, requestBody: RequestBody): ResponseBody {
+        return withContext(Dispatchers.IO) {
+            val requestBuilder = Request.Builder().url(url).post(requestBody)
+            val response = mOkHttpClient.newCall(requestBuilder.build()).execute()
+            if (response.isSuccessful) {
+                response.body?.let {
+                    return@withContext it
+                }
+            }
+            throw HttpUtilException(response.code, "Msg:${response.message},Body:${response.body?.string()}")
+        }
     }
 }

@@ -1,6 +1,7 @@
 package xyz.xyz0z0.httputil
 
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 
 /**
  * Author: Cheng
@@ -9,8 +10,12 @@ import okhttp3.RequestBody
  */
 interface IHttpEngine {
 
-    fun get(url: String, params: Map<String, Any>, callBack: EngineCallBack?)
+    fun get(pathUrl: String, callBack: NetCallBack)
 
-    fun post(url: String, requestBody: RequestBody, callBack: EngineCallBack?)
+    suspend fun getSuspend(pathUrl: String): ResponseBody
+
+    fun post(url: String, requestBody: RequestBody, callBack: NetCallBack)
+
+    suspend fun postSuspend(url: String, requestBody: RequestBody): ResponseBody
 
 }

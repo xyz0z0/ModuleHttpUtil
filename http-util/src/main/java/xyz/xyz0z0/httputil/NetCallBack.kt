@@ -1,17 +1,16 @@
 package xyz.xyz0z0.httputil
 
 import okhttp3.ResponseBody
-import java.io.InputStream
 
 /**
  * Author: Cheng
  * Date: 2021/8/17 17:44
  * Description: xyz.xyz0z0.httputil
  */
-interface EngineCallBack {
+interface NetCallBack {
 
     fun onError(e: Exception)
 
-    fun onSuccess(result:String)
+    fun onSuccess(responseBody: ResponseBody)
 
 }
