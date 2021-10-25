@@ -11,7 +11,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import xyz.xyz0z0.httputil.EngineCallBack
 import xyz.xyz0z0.httputil.HttpUtils
 import xyz.xyz0z0.httputil.Transform
 
@@ -93,13 +92,19 @@ class MainActivity : AppCompatActivity() {
                 LogUtils.json("cxg", result)
             }
 
+
+        }
+
+
+        btnLogin.setOnClickListener {
 //            HttpUtils.with()
-//                .url(jhUrl)
-//                .post(method.toWebServiceBody(map))
+//                .url(Constants.loginUrl)
+//                .addParam("username", "xyz0z0")
+//                .addParam("password", "__xyz0z0")
+//                .post()
 //                .execute(object : EngineCallBack {
 //                    override fun onError(e: Exception) {
 //                        e.printStackTrace()
-//                        LogUtils.json((e as HttpUtilException).getMsg())
 //                    }
 //
 //
@@ -107,27 +112,6 @@ class MainActivity : AppCompatActivity() {
 //                        LogUtils.json("cxg", result)
 //                    }
 //                })
-
-
-        }
-
-
-        btnLogin.setOnClickListener {
-            HttpUtils.with()
-                .url(Constants.loginUrl)
-                .addParam("username", "xyz0z0")
-                .addParam("password", "__xyz0z0")
-                .post()
-                .execute(object : EngineCallBack {
-                    override fun onError(e: Exception) {
-                        e.printStackTrace()
-                    }
-
-
-                    override fun onSuccess(result: String) {
-                        LogUtils.json("cxg", result)
-                    }
-                })
         }
 
         btnGetBanner.setOnClickListener {
@@ -142,36 +126,36 @@ class MainActivity : AppCompatActivity() {
             }
             HttpUtils.registerHost(Constants.bannerUrl, netCallBack)
 
-            HttpUtils.with()
-                .url(Constants.bannerUrl)
-                .get()
-                .execute(object : EngineCallBack {
-
-                    override fun onError(e: Exception) {
-                        e.printStackTrace()
-                    }
-
-                    override fun onSuccess(result: String) {
-                        LogUtils.json("cxg", result)
-                    }
-
-                })
+//            HttpUtils.with()
+//                .url(Constants.bannerUrl)
+//                .get()
+//                .execute(object : EngineCallBack {
+//
+//                    override fun onError(e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//
+//                    override fun onSuccess(result: String) {
+//                        LogUtils.json("cxg", result)
+//                    }
+//
+//                })
         }
 
         btnGetUnread.setOnClickListener {
-            HttpUtils.with()
-                .url(Constants.unreadCountUrl)
-                .get()
-                .execute(object : EngineCallBack {
-
-                    override fun onError(e: Exception) {
-                        e.printStackTrace()
-                    }
-
-                    override fun onSuccess(result: String) {
-                        LogUtils.json("cxg", result)
-                    }
-                })
+//            HttpUtils.with()
+//                .url(Constants.unreadCountUrl)
+//                .get()
+//                .execute(object : EngineCallBack {
+//
+//                    override fun onError(e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//
+//                    override fun onSuccess(result: String) {
+//                        LogUtils.json("cxg", result)
+//                    }
+//                })
         }
 
     }

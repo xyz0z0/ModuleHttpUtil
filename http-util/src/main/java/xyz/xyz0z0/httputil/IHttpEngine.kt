@@ -10,12 +10,8 @@ import okhttp3.ResponseBody
  */
 interface IHttpEngine {
 
-    fun get(pathUrl: String, callBack: NetCallBack)
+    fun get(pathUrl: String): ResponseBody
 
-    suspend fun getSuspend(pathUrl: String): ResponseBody
-
-    fun post(url: String, requestBody: RequestBody, callBack: NetCallBack)
-
-    suspend fun postSuspend(url: String, requestBody: RequestBody): ResponseBody
+    fun post(url: String, requestBody: RequestBody): ResponseBody
 
 }

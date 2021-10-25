@@ -3,7 +3,6 @@ package xyz.xyz0z0.httputil
 import android.os.Handler
 import android.os.Looper
 import android.util.ArrayMap
-import android.util.Log
 import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody
@@ -52,10 +51,10 @@ class HttpUtils {
         return this
     }
 
-    suspend fun call(): String {
+    fun call(): String {
         val host = mStrUrl.toHttpUrl().host
         if (mType == POST_FORM_TYPE) {
-            val responseBody = mHttpEngine.postSuspend(mStrUrl, mRequestBody!!)
+            val responseBody = mHttpEngine.post(mStrUrl, mRequestBody!!)
             transformMap[host]?.let {
                 return it.transformResponse(responseBody)
             }
@@ -63,7 +62,7 @@ class HttpUtils {
         }
         if (mType == GET_TYPE) {
             val pathUrl = joinParams(mStrUrl, mParams)
-            val responseBody = mHttpEngine.getSuspend(pathUrl)
+            val responseBody = mHttpEngine.get(pathUrl)
             transformMap[host]?.let {
                 return it.transformResponse(responseBody)
             }
@@ -71,61 +70,6 @@ class HttpUtils {
         }
         throw HttpUtilException(0, "Code Error")
     }
-
-    fun execute(callBack: EngineCallBack?) {
-        val host = mStrUrl.toHttpUrl().host
-        Log.d("cxg", "host $host")
-        if (mType == POST_FORM_TYPE) {
-            postCall(mStrUrl, mParams, object : NetCallBack {
-                override fun onError(e: Exception) {
-                    callBack?.onError(e)
-                }
-
-                override fun onSuccess(responseBody: ResponseBody) {
-                    callBack?.onSuccess(transformMap[host]?.transformResponse(responseBody)!!)
-                }
-            })
-        }
-        if (mType == GET_TYPE) {
-            val pathUrl = joinParams(mStrUrl, mParams)
-            getCall(pathUrl, object : NetCallBack {
-                override fun onError(e: Exception) {
-                    callBack?.onError(e)
-                }
-
-                override fun onSuccess(responseBody: ResponseBody) {
-                    callBack?.onSuccess(transformMap[host]?.transformResponse(responseBody)!!)
-                }
-
-
-            })
-        }
-    }
-
-    private fun postCall(url: String, params: Map<String, Any>, callBack: NetCallBack) {
-        if (mRequestBody == null) {
-            mRequestBody = HttpUtils.wrapFormBody(params)
-        }
-        mRequestBody?.let {
-            mHttpEngine.post(url, it, callBack)
-        }
-    }
-
-
-    private fun getCall(pathUrl: String, callBack: NetCallBack) {
-        mHttpEngine.get(pathUrl, callBack)
-    }
-
-
-//    private fun postFormCall(url: String, params: Map<String, Any>, callBack: EngineCallBack) {
-//        mHttpEngine.postForm(url, params, charset, callBack)
-//    }
-
-
-    fun execute() {
-        execute(null)
-    }
-
 
     companion object {
         const val POST_FORM_TYPE = 0x0011
