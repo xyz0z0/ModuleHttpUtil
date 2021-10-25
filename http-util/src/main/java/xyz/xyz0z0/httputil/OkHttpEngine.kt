@@ -1,6 +1,5 @@
 package xyz.xyz0z0.httputil
 
-import com.blankj.utilcode.util.LogUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -42,7 +41,6 @@ class OkHttpEngine : IHttpEngine {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    LogUtils.json("cxg-get", response.headers.toMultimap())
                     response.body?.let {
                         callBack.onSuccess(it)
                         return
@@ -84,7 +82,6 @@ class OkHttpEngine : IHttpEngine {
                     val cookies = response.headers.values("Set-Cookie")
                     for (cookie in cookies) {
                         val cookie = Cookie.parse(response.request.url, cookie)
-                        LogUtils.json("cxg", cookie)
                     }
                     response.body?.let {
                         callBack.onSuccess(it)
