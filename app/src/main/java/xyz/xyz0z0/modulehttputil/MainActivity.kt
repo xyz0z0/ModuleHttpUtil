@@ -10,9 +10,13 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import xyz.xyz0z0.httputil.HttpUtils
+import xyz.xyz0z0.httputil.PersistenceCookieJar
 import xyz.xyz0z0.httputil.Transform
+import java.util.concurrent.TimeUnit
 
 val REGEX_CUSTOMER = Regex("\\{.*\\}")
 
@@ -51,6 +55,20 @@ class MainActivity : AppCompatActivity() {
         val jhUrl = "http://9.0.2.139:9032/GYWebService.asmx"
         HttpUtils.registerHost(jhUrl, netCallBack1)
 
+//        val logInterceptor: HttpLoggingInterceptor = HttpLoggingInterceptor(HttpLogger())
+//        logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+//
+//        val defaultHttpClient = OkHttpClient.Builder()
+//            .callTimeout(30, TimeUnit.SECONDS)
+//            .connectTimeout(30, TimeUnit.SECONDS)
+//            .writeTimeout(30, TimeUnit.SECONDS)
+//            .readTimeout(30, TimeUnit.SECONDS)
+//            .addInterceptor(logInterceptor)
+//            .cookieJar(PersistenceCookieJar())
+//            .build()
+//        HttpUtils.initHttpClient(defaultHttpClient)
+
+
         btnCustomerLogin.setOnClickListener {
 
 //            val map = ArrayMap<String, String>()
@@ -84,10 +102,10 @@ class MainActivity : AppCompatActivity() {
                 LogUtils.d(exception.message)
             }
             GlobalScope.launch(exceptionHandler) {
+
                 val result = HttpUtils.with()
                     .url(jhUrl)
-                    .post(requestBody)
-                    .call().fromJsonArray(ListInfo::class.java)
+                    .post(requestBody).fromJsonArray(ListInfo::class.java)
                 LogUtils.json("cxg", result.javaClass.canonicalName)
                 LogUtils.json("cxg", result)
             }
