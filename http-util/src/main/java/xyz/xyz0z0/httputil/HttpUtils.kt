@@ -16,7 +16,6 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
 
 
     private var mStrUrl: String = ""
-    private var mType = POST_FORM_TYPE
 
 
     fun url(url: String): HttpUtils {
@@ -24,21 +23,27 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
         return this
     }
 
+    fun postCall(requestBody: RequestBody): ResponseBody {
+        return httpEngine.post(mStrUrl, requestBody)
+    }
+
     fun post(requestBody: RequestBody): String {
-        mType = POST_FORM_TYPE
         val host = mStrUrl.toHttpUrl().host
-        val responseBody = httpEngine.post(mStrUrl, requestBody)
+        val responseBody = postCall(requestBody)
         mTransformMap[host]?.let {
             return it.transformResponse(responseBody)
         }
         return defaultTransform.transformResponse(responseBody)
     }
 
-    fun get(params: Map<String, Any>): String {
-        mType = GET_TYPE
-        val host = mStrUrl.toHttpUrl().host
+    fun getCall(params: Map<String, Any>): ResponseBody {
         val pathUrl = params.toParamUrl(mStrUrl)
-        val responseBody = httpEngine.get(pathUrl)
+        return httpEngine.get(pathUrl)
+    }
+
+    fun get(params: Map<String, Any>): String {
+        val host = mStrUrl.toHttpUrl().host
+        val responseBody = getCall(params)
         mTransformMap[host]?.let {
             return it.transformResponse(responseBody)
         }
