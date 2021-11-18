@@ -13,8 +13,12 @@ import okhttp3.ResponseBody
 class OkHttpEngine(private val httpClient: OkHttpClient) : IHttpEngine {
 
 
-    override fun get(pathUrl: String): ResponseBody {
-        val request = Request.Builder().url(pathUrl).build()
+    override fun get(pathUrl: String, headerMap: MutableMap<String, String>): ResponseBody {
+        val requestBuilder = Request.Builder()
+        headerMap.forEach {
+            requestBuilder.addHeader(it.key, it.value)
+        }
+        val request = requestBuilder.url(pathUrl).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
             response.body?.let {
@@ -27,9 +31,13 @@ class OkHttpEngine(private val httpClient: OkHttpClient) : IHttpEngine {
     private var cookieStrList: List<String> = mutableListOf()
 
 
-    override fun post(url: String, requestBody: RequestBody): ResponseBody {
-        val requestBuilder = Request.Builder().url(url).post(requestBody)
-        val response = httpClient.newCall(requestBuilder.build()).execute()
+    override fun post(url: String, headerMap: MutableMap<String, String>, requestBody: RequestBody): ResponseBody {
+        val requestBuilder = Request.Builder()
+        headerMap.forEach {
+            requestBuilder.addHeader(it.key, it.value)
+        }
+        val request = requestBuilder.url(url).post(requestBody).build()
+        val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
             response.body?.let {
                 return it
