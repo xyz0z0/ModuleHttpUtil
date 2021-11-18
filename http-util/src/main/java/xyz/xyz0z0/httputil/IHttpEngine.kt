@@ -10,8 +10,8 @@ import okhttp3.ResponseBody
  */
 interface IHttpEngine {
 
-    fun get(pathUrl: String): ResponseBody
+    fun get(pathUrl: String, headerMap: MutableMap<String, String>): ResponseBody
 
-    fun post(url: String, requestBody: RequestBody): ResponseBody
+    fun post(url: String, headerMap: MutableMap<String, String>, requestBody: RequestBody): ResponseBody
 
 }
