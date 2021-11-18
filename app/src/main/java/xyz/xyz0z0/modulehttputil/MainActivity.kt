@@ -13,9 +13,11 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import timber.log.Timber
 import xyz.xyz0z0.httputil.HttpUtils
 import xyz.xyz0z0.httputil.PersistenceCookieJar
 import xyz.xyz0z0.httputil.Transform
+import java.lang.RuntimeException
 import java.util.concurrent.TimeUnit
 
 val REGEX_CUSTOMER = Regex("\\{.*\\}")
@@ -42,6 +44,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Timber.plant(Timber.DebugTree())
+//        Timber.plant(CrashReportingTree())
+
         findView()
 
         val netCallBack1: Transform = object : Transform {
@@ -115,6 +121,10 @@ class MainActivity : AppCompatActivity() {
 
 
         btnLogin.setOnClickListener {
+            Timber.tag("xx1")
+            Timber.d("test")
+            Timber.e(RuntimeException())
+
 //            HttpUtils.with()
 //                .url(Constants.loginUrl)
 //                .addParam("username", "xyz0z0")
@@ -133,6 +143,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnGetBanner.setOnClickListener {
+//            Timber.tag("xx2")
+            Timber.d("test2")
+            Timber.e(RuntimeException())
             val netCallBack: Transform = object : Transform {
 
 

@@ -16,6 +16,7 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
 
 
     private var mStrUrl: String = ""
+    private val mHeaderMap: MutableMap<String, String> = ArrayMap()
 
 
     fun url(url: String): HttpUtils {
@@ -23,8 +24,13 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
         return this
     }
 
+    fun addHeader(name: String, value: String): HttpUtils {
+        mHeaderMap[name] = value
+        return this
+    }
+
     fun postCall(requestBody: RequestBody): ResponseBody {
-        return httpEngine.post(mStrUrl, requestBody)
+        return httpEngine.post(mStrUrl, mHeaderMap, requestBody)
     }
 
     fun post(requestBody: RequestBody): String {
@@ -38,7 +44,7 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
 
     fun getCall(params: Map<String, Any>): ResponseBody {
         val pathUrl = params.toParamUrl(mStrUrl)
-        return httpEngine.get(pathUrl)
+        return httpEngine.get(pathUrl, mHeaderMap)
     }
 
     fun get(params: Map<String, Any>): String {
@@ -54,12 +60,12 @@ class HttpUtils(private val httpEngine: IHttpEngine) {
     companion object {
 
         private val defaultHttpClient = OkHttpClient.Builder()
-            .callTimeout(30, TimeUnit.SECONDS)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .cookieJar(PersistenceCookieJar())
-            .build()
+                .callTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .cookieJar(PersistenceCookieJar())
+                .build()
 
         const val POST_FORM_TYPE = 0x0011
         const val GET_TYPE = 0x0022
